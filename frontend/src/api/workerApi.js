@@ -1,53 +1,15 @@
 import axiosInstance from './axiosInstance'
-import { MOCK_WORKERS } from '../utils/constants'
 
 const unwrap = (response) => response.data
 
-const buildFallbackWorkersResponse = (params = {}) => ({
-  success: true,
-  message: 'Showing sample workers',
-  data: MOCK_WORKERS,
-  pagination: {
-    total: MOCK_WORKERS.length,
-    page: Number(params.page || 1),
-    limit: Number(params.limit || MOCK_WORKERS.length),
-    totalPages: 1,
-  },
-})
-
 export async function getWorkers(params = {}) {
-  try {
-    const response = await axiosInstance.get('/workers', { params })
-    const body = unwrap(response)
-    const workers = Array.isArray(body?.data) ? body.data : []
-
-    return {
-      ...body,
-      data: workers.length > 0 ? workers : MOCK_WORKERS,
-      pagination: body?.pagination || {
-        total: workers.length || MOCK_WORKERS.length,
-        page: Number(params.page || 1),
-        limit: Number(params.limit || workers.length || MOCK_WORKERS.length),
-        totalPages: 1,
-      },
-    }
-  } catch (error) {
-    return buildFallbackWorkersResponse(params)
-  }
+  const response = await axiosInstance.get('/workers', { params })
+  return unwrap(response)
 }
 
 export async function getWorkerById(id) {
-  try {
-    const response = await axiosInstance.get(`/workers/${id}`)
-    return unwrap(response)
-  } catch (error) {
-    const fallbackWorker = MOCK_WORKERS.find((worker) => String(worker.id) === String(id) || String(worker._id) === String(id)) || MOCK_WORKERS[0]
-    return {
-      success: true,
-      message: 'Showing sample worker profile',
-      data: fallbackWorker,
-    }
-  }
+  const response = await axiosInstance.get(`/workers/${id}`)
+  return unwrap(response)
 }
 
 export async function updateProfile(payload) {
@@ -106,6 +68,11 @@ export async function getReceivedReviews() {
 
 export async function getMyBookings() {
   const response = await axiosInstance.get('/bookings/worker')
+  return unwrap(response)
+}
+
+export async function getOwnProfile() {
+  const response = await axiosInstance.get('/workers/dashboard/me')
   return unwrap(response)
 }
 

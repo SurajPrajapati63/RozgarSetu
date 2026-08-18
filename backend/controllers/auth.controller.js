@@ -7,6 +7,20 @@ import { signAccessToken, signRefreshToken, hashToken } from '../utils/generateT
 import { generateWorkerID } from '../utils/generateWorkerID.js';
 import { resolveLoginTarget } from '../utils/authLoginResolver.js';
 
+const isBcryptHash = (value = '') => typeof value === 'string' && /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(value);
+
+const verifyPassword = async (candidatePassword, storedPassword) => {
+  if (!storedPassword) return false;
+
+  if (storedPassword === candidatePassword) return true;
+
+  try {
+    return await bcrypt.compare(candidatePassword, storedPassword);
+  } catch {
+    return false;
+  }
+};
+
 export const userSignup = async (req, res) => {
   const { name, mobile, password, address } = req.body;
   if (await User.findOne({ mobile })) return ApiResponse.error(res, 'Mobile already registered', 409);
@@ -29,10 +43,14 @@ export const userLogin = async (req, res) => {
     console.debug(`[AUTH] userLogin: user not found for mobile=${mobile}`);
     return ApiResponse.error(res, 'Invalid credentials', 401);
   }
-  const ok = await bcrypt.compare(password, user.password || '');
-  console.debug(`[AUTH] userLogin: bcrypt.compare result=${ok} for mobile=${mobile}`);
+  const ok = await verifyPassword(password, user.password || '');
+  console.debug(`[AUTH] userLogin: password verification result=${ok} for mobile=${mobile}`);
   if (!ok) {
     return ApiResponse.error(res, 'Invalid credentials', 401);
+  }
+  if (!isBcryptHash(user.password) && user.password === password) {
+    user.password = await bcrypt.hash(password, 12);
+    await user.save();
   }
   const payload = { id: user._id, role: user.role };
   const accessToken = signAccessToken(payload);
@@ -57,8 +75,11 @@ export const workerLogin = async (req, res) => {
   const { workerID, password } = req.body;
   const worker = await Worker.findOne({ workerID }).select('+password +refreshToken');
   if (!worker) return ApiResponse.error(res, 'Invalid credentials', 401);
-  const ok = await bcrypt.compare(password, worker.password);
+  const ok = await verifyPassword(password, worker.password);
   if (!ok) return ApiResponse.error(res, 'Invalid credentials', 401);
+  if (!isBcryptHash(worker.password) && worker.password === password) {
+    worker.password = await bcrypt.hash(password, 12);
+  }
   if (['suspended','rejected'].includes(worker.status)) return ApiResponse.error(res, 'Account not allowed', 403);
   const payload = { id: worker._id, role: worker.role };
   const accessToken = signAccessToken(payload);
@@ -86,8 +107,11 @@ export const adminLogin = async (req, res) => {
 
   if (!admin) return ApiResponse.error(res, 'Invalid credentials', 401);
 
-  const ok = await bcrypt.compare(password, admin.password || '');
+  const ok = await verifyPassword(password, admin.password || '');
   if (!ok) return ApiResponse.error(res, 'Invalid credentials', 401);
+  if (!isBcryptHash(admin.password) && admin.password === password) {
+    admin.password = await bcrypt.hash(password, 12);
+  }
 
   const payload = { id: admin._id, role: admin.role };
   const accessToken = signAccessToken(payload);

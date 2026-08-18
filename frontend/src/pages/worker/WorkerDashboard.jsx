@@ -1,21 +1,37 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { MoreVertical, Pencil, MapPin, BriefcaseBusiness, IndianRupee, CalendarDays } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { Navbar } from '../../components/common/Navbar'
 import { DashboardStats } from '../../components/dashboard/worker/DashboardStats'
+import { BookingManagement } from '../../components/dashboard/worker/BookingManagement'
 import { ProfileEditForm } from '../../components/dashboard/worker/ProfileEditForm'
 import { Modal } from '../../components/common/Modal'
-import { getProfileViewers, getReceivedReviews } from '../../api/workerApi'
+import { getOwnProfile, getProfileViewers, getReceivedReviews } from '../../api/workerApi'
 
 export default function WorkerDashboard() {
   const user = useAuthStore((state) => state.user)
+  const updateUser = useAuthStore((state) => state.updateUser)
   const navigate = useNavigate()
-  const [isEditingProfile, setIsEditingProfile] = useState(!user?.profileCompleted)
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
   const [detailType, setDetailType] = useState(null)
   const [detailItems, setDetailItems] = useState([])
   const [detailsLoading, setDetailsLoading] = useState(false)
+
+  useEffect(() => {
+    const loadWorkerProfile = async () => {
+      try {
+        const response = await getOwnProfile()
+        const worker = response?.data || response
+        if (worker) updateUser({ ...worker, profileCompleted: true })
+      } catch {
+        // The login payload is enough to keep the dashboard usable if a refresh fails.
+      }
+    }
+
+    loadWorkerProfile()
+  }, [updateUser])
 
   const handleStatClick = async (type) => {
     if (type === 'bookings') {
@@ -115,6 +131,18 @@ export default function WorkerDashboard() {
               </section>
             )}
           {!isEditingProfile && <DashboardStats onStatClick={handleStatClick} />}
+          {!isEditingProfile && (
+            <section className="card">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Your bookings</h2>
+                  <p className="mt-1 text-sm text-slate-500">Manage requests sent by users.</p>
+                </div>
+                <button type="button" onClick={() => navigate('/dashboard/worker/bookings')} className="btn-outline text-sm">View all</button>
+              </div>
+              <BookingManagement />
+            </section>
+          )}
         </div>
       </div>
       <Modal open={Boolean(detailType)} onClose={() => setDetailType(null)} title={detailType === 'viewers' ? 'People who viewed your profile' : 'Ratings and reviews'}>

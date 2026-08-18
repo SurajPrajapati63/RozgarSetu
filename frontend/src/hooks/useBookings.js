@@ -1,12 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import bookingApi from '../api/bookingApi';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '../store/authStore';
 
 export function useUserBookings(status) {
+  const userId = useAuthStore((state) => state.user?.id || state.user?._id);
+
   return useQuery({
-    queryKey: ['userBookings', status],
+    queryKey: ['userBookings', userId, status],
     queryFn: () => bookingApi.getUserBookings({ status }),
-    select: (res) => res.data || []
+    select: (res) => res.data || [],
+    enabled: Boolean(userId)
   });
 }
 

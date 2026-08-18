@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getWorkers, getWorkerById } from '../api/workerApi'
 
 export function useWorkers() {
-  return useQuery({ queryKey: ['workers'], queryFn: getWorkers, select: (res) => res.data })
+  return useQuery({ queryKey: ['workers'], queryFn: () => getWorkers(), select: (res) => res.data })
 }
 
 export function useWorker(id) {

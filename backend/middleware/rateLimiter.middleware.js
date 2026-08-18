@@ -15,6 +15,9 @@ export const loginLimiter = rateLimit({
 export const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
+  // Dashboard and listing reads are safe to repeat and should not prevent a
+  // worker from seeing their booking requests.
+  skip: (req) => req.method === 'GET' || req.method === 'HEAD',
   message: { success: false, message: 'Too many requests, please slow down' }
 });
 

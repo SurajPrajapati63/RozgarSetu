@@ -6,12 +6,18 @@ export async function createBooking(payload) {
 }
 
 export async function getUserBookings(params = {}) {
-  const response = await axiosInstance.get('/bookings/my', { params });
+  const response = await axiosInstance.get('/bookings/my', {
+    params,
+    headers: { 'Cache-Control': 'no-cache' },
+  });
   return response.data;
 }
 
 export async function getWorkerBookings(params = {}) {
-  const response = await axiosInstance.get('/bookings/worker', { params });
+  const response = await axiosInstance.get('/bookings/worker', {
+    params,
+    headers: { 'Cache-Control': 'no-cache' },
+  });
   return response.data;
 }
 

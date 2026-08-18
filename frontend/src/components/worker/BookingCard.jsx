@@ -8,7 +8,7 @@ export function BookingCard({ booking, onStatusChange, isUpdating = false }) {
     <div className="rounded-2xl border border-slate-200 bg-white p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="font-semibold text-slate-900">{booking.user?.name || booking.userName || booking.workerName || 'Client'}</div>
+          <div className="font-semibold text-slate-900">{booking.user?.name || booking.userName || booking.worker?.name || booking.workerName || 'Client'}</div>
           <div className="mt-1 text-sm text-slate-600">{booking.serviceDescription || booking.service || 'Service request'}</div>
         </div>
         <Badge status={statusLabel || 'Pending'} variant={statusVariant} />

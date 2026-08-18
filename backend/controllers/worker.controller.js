@@ -41,6 +41,7 @@ const saveProfilePhotoLocally = async (file, req) => {
 
 export const getAllWorkers = asyncHandler(async (req, res) => {
   const { category, city, rating, minPrice, maxPrice, search, sort, page = 1, limit = 12 } = req.query;
+  // Pending workers may be browsed, but they cannot receive bookings until approved.
   const query = { status: { $in: ['active', 'pending'] } };
 
   if (category && category !== 'All') query.category = category;
@@ -83,12 +84,12 @@ export const getWorkerById = asyncHandler(async (req, res) => {
 
   const selectFields = auth
     ? '-password -refreshToken'
-    : 'name photo category city state bio skills pricePerDay experience availability rating reviewCount workerID createdAt';
+    : 'name photo category city state bio skills pricePerDay experience availability rating reviewCount workerID status createdAt';
 
   const worker = await Worker.findById(id).select(selectFields);
   if (!worker) return ApiResponse.error(res, 'Worker not found', 404);
 
-  const canView = worker.status === 'active' || worker.status === 'pending' || (req.user?.role === 'admin');
+  const canView = ['active', 'pending'].includes(worker.status) || req.user?.role === 'admin';
   if (!canView) return ApiResponse.error(res, 'Worker not found', 404);
 
   // Increment profile views

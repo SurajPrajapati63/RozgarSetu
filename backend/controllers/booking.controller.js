@@ -5,6 +5,11 @@ import { generateBookingID } from '../utils/generateWorkerID.js';
 import mongoose from 'mongoose';
 import asyncHandler from '../middleware/asyncHandler.js';
 
+const preventBookingResponseCaching = (res) => {
+  res.set('Cache-Control', 'no-store, private, max-age=0');
+  res.set('Pragma', 'no-cache');
+};
+
 export const createBooking = asyncHandler(async (req, res) => {
   const { workerId, serviceDate, serviceDescription, contactNumber, amount } = req.body;
   if (!mongoose.Types.ObjectId.isValid(workerId)) {
@@ -12,7 +17,7 @@ export const createBooking = asyncHandler(async (req, res) => {
   }
   
   const worker = await Worker.findById(workerId);
-  if (!worker || worker.status !== 'active') {
+  if (!worker || !['active', 'pending'].includes(worker.status)) {
     return ApiResponse.error(res, 'Worker is currently not available for booking', 400);
   }
 
@@ -43,6 +48,7 @@ export const getMyBookings = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 })
     .populate('worker', 'name workerID category photo pricePerDay mobile city address rating reviewCount');
 
+  preventBookingResponseCaching(res);
   return ApiResponse.success(res, bookings);
 });
 
@@ -55,6 +61,7 @@ export const getWorkerBookings = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 })
     .populate('user', 'name mobile photo address email');
 
+  preventBookingResponseCaching(res);
   return ApiResponse.success(res, bookings);
 });
 

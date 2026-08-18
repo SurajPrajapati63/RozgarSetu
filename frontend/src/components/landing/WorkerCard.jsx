@@ -87,7 +87,9 @@ export function WorkerCard({ worker }) {
 
       {/* Call to Action indicator */}
       <div className="mt-3 rounded-lg border border-dashed border-blue-200 bg-blue-50/50 py-1.5 text-center text-xs font-medium text-blue-600">
-        {role === 'worker' ? 'Worker profile preview' : 'Click to view full profile & book'}
+        {role === 'worker'
+          ? 'Worker profile preview'
+          : 'Click to view full profile & book'}
       </div>
     </div>
   );
