@@ -11,6 +11,13 @@ export const createBookingSchema = Joi.object({
   amount: Joi.number().min(100).required()
 });
 
-export const statusUpdateSchema = Joi.object({ status: Joi.string().valid('accepted','rejected','completed').required(), cancelReason: Joi.string().max(200).when('status', { is: 'rejected', then: Joi.required(), otherwise: Joi.optional() }) });
+export const statusUpdateSchema = Joi.object({
+  status: Joi.string().valid('accepted', 'rejected', 'completed').required(),
+  cancelReason: Joi.string().max(200).allow('', null).when('status', {
+    is: 'rejected',
+    then: Joi.required(),
+    otherwise: Joi.optional()
+  })
+});
 
 export default { createBookingSchema, statusUpdateSchema };

@@ -2,20 +2,17 @@ import { useState } from 'react'
 import { Navbar } from '../components/common/Navbar'
 import { Footer } from '../components/common/Footer'
 import { HeroSection } from '../components/landing/HeroSection'
-import { CategoryFilter } from '../components/landing/CategoryFilter'
+import { MenuBar } from '../components/landing/MenuBar'
 import { WorkerGrid } from '../components/landing/WorkerGrid'
 import { FeaturedWorkers } from '../components/landing/FeaturedWorkers'
 import { HowItWorks } from '../components/landing/HowItWorks'
 import { TestimonialsSection } from '../components/landing/TestimonialsSection'
-import { StatsSection } from '../components/landing/StatsSection'
 
 export default function LandingPage() {
   const [filters, setFilters] = useState({ category: '', city: '', rating: '', available: false })
-  const [selectedCategory, setSelectedCategory] = useState('')
 
   const handleSearch = ({ city, category }) => {
     setFilters((current) => ({ ...current, city: city || '', category: category || '' }))
-    setSelectedCategory(category || '')
   }
 
   return (
@@ -28,17 +25,13 @@ export default function LandingPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Browse workers</p>
             <h2 className="text-3xl font-semibold text-slate-900">Find the right expert near you</h2>
           </div>
-          <CategoryFilter selected={selectedCategory} filters={filters} onFiltersChange={setFilters} onSelect={(category) => {
-            setSelectedCategory(category)
-            setFilters((current) => ({ ...current, category }))
-          }} />
+          <MenuBar filters={filters} onFiltersChange={setFilters} />
         </div>
         <WorkerGrid filters={filters} />
       </section>
       <FeaturedWorkers />
       <HowItWorks />
       <TestimonialsSection />
-      <StatsSection />
       <Footer />
     </div>
   )

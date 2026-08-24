@@ -49,6 +49,8 @@ export function ProfileEditForm({ onSaved }) {
     setAvailableDays(user?.availability?.days || ['Mon', 'Tue', 'Wed'])
   }, [user, reset])
 
+  const [photoError, setPhotoError] = useState(false)
+
   const onSubmit = async (values) => {
     setIsSaving(true)
     try {
@@ -67,14 +69,16 @@ export function ProfileEditForm({ onSaved }) {
         isAvailableNow: user?.availability?.isAvailableNow ?? true,
       })
 
+      const latestWorker = updatedWorker?.data || updatedWorker
       updateUser({
-        ...(updatedWorker?.data || updatedWorker),
+        ...user,
+        ...latestWorker,
+        photo: photoPreview || latestWorker?.photo || user?.photo,
         availability: availabilityResponse?.data || availabilityResponse,
         profileCompleted: true,
       })
       toast.success('Profile saved successfully')
       onSaved?.()
-      setSelectedPhoto(null)
     } catch (error) {
       toast.error(error?.response?.data?.message || 'Could not save profile')
     } finally {
@@ -101,16 +105,27 @@ export function ProfileEditForm({ onSaved }) {
     const file = event.target.files?.[0]
     if (!file) return
 
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file (JPG, PNG, WebP)')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB')
+      return
+    }
+
     setIsUploadingPhoto(true)
+    setPhotoError(false)
     try {
       const response = await uploadProfilePhoto(file)
       const photo = response?.data?.photo || response?.photo
       const photoPublicId = response?.data?.photoPublicId || response?.photoPublicId
-      if (!photo) throw new Error('The photo upload did not return an image')
+      if (!photo) throw new Error('The photo upload did not return an image URL')
 
       setPhotoPreview(photo)
       updateUser({ ...user, photo, photoPublicId })
-      toast.success('Profile photo updated')
+      toast.success('Profile photo updated successfully!')
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message || 'Could not upload profile photo')
     } finally {
@@ -121,8 +136,6 @@ export function ProfileEditForm({ onSaved }) {
 
   return (
     <form className="card space-y-4" onSubmit={handleSubmit(onSubmit)}>
-      
-
       <div className="flex flex-col items-center gap-3">
         <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelection} />
         <div className="relative">
@@ -132,31 +145,36 @@ export function ProfileEditForm({ onSaved }) {
             onClick={() => photoPreview ? setPhotoViewerOpen(true) : photoInputRef.current?.click()}
             aria-label={photoPreview ? 'View profile photo' : 'Add profile photo'}
           >
-            {photoPreview ? (
-              <img src={photoPreview} alt="Profile preview" className="h-28 w-28 rounded-full object-cover border-4 border-white shadow-md transition-transform duration-200 group-hover:scale-105" />
+            {photoPreview && !photoError ? (
+              <img
+                src={photoPreview}
+                alt="Profile preview"
+                onError={() => setPhotoError(true)}
+                className="h-32 w-32 rounded-full object-cover border-4 border-white shadow-md transition-transform duration-200 group-hover:scale-105"
+              />
             ) : (
-              <div className="flex h-28 w-28 items-center justify-center rounded-full border-2 border-dashed border-slate-300 bg-white text-sm font-medium text-slate-500">
-                No photo
+              <div className="flex h-32 w-32 items-center justify-center rounded-full border-2 border-dashed border-slate-300 bg-slate-50 text-sm font-semibold text-slate-500">
+                {isUploadingPhoto ? 'Uploading...' : 'No Photo'}
               </div>
             )}
           </button>
           <button
             type="button"
-            className="absolute bottom-0 right-0 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow-md hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"
+            className="absolute bottom-0 right-0 rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
             onClick={() => {
               setIsPhotoEditing(true)
               photoInputRef.current?.click()
             }}
             disabled={isUploadingPhoto}
           >
-            {isUploadingPhoto ? 'Uploading...' : 'Edit photo'}
+            {isUploadingPhoto ? 'Uploading...' : 'Change Photo'}
           </button>
         </div>
-        {isPhotoEditing && (
+        {(isPhotoEditing || user?.photo) && (
           <div className="flex flex-wrap justify-center gap-2">
             {user?.photo && (
-              <button type="button" className="btn-outline border-red-200 text-sm text-red-600 hover:border-red-300 hover:bg-red-50" onClick={handleRemovePhoto} disabled={isRemovingPhoto}>
-                {isRemovingPhoto ? 'Removing...' : 'Remove photo'}
+              <button type="button" className="btn-outline border-red-200 text-xs text-red-600 hover:border-red-300 hover:bg-red-50 py-1 px-3" onClick={handleRemovePhoto} disabled={isRemovingPhoto}>
+                {isRemovingPhoto ? 'Removing...' : 'Remove Photo'}
               </button>
             )}
           </div>

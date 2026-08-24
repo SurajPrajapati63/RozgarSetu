@@ -19,6 +19,9 @@ export default function WorkerDashboard() {
   const [detailItems, setDetailItems] = useState([])
   const [detailsLoading, setDetailsLoading] = useState(false)
 
+  const [photoViewerOpen, setPhotoViewerOpen] = useState(false)
+  const [photoError, setPhotoError] = useState(false)
+
   useEffect(() => {
     const loadWorkerProfile = async () => {
       try {
@@ -92,10 +95,22 @@ export default function WorkerDashboard() {
                 </div>
 
                 <div className="flex items-start gap-4 pr-10">
-                  {user?.photo ? (
-                    <img src={user.photo} alt={user.name} className="h-20 w-20 rounded-full object-cover ring-4 ring-slate-100" />
+                  {user?.photo && !photoError ? (
+                    <button
+                      type="button"
+                      onClick={() => setPhotoViewerOpen(true)}
+                      className="group relative cursor-zoom-in rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      title="Click to view full photo"
+                    >
+                      <img
+                        src={user.photo}
+                        alt={user.name}
+                        onError={() => setPhotoError(true)}
+                        className="h-24 w-24 rounded-full object-cover ring-4 ring-slate-100 shadow-md transition-transform duration-200 group-hover:scale-105"
+                      />
+                    </button>
                   ) : (
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-2xl font-bold text-slate-500">
+                    <div className="flex h-24 w-24 items-center justify-center rounded-full bg-slate-100 text-2xl font-bold text-slate-500 ring-4 ring-slate-100 shadow-sm">
                       {user?.name?.charAt(0)?.toUpperCase() || 'W'}
                     </div>
                   )}
@@ -105,6 +120,14 @@ export default function WorkerDashboard() {
                     <p className="mt-1 flex items-center gap-1 text-sm text-slate-500"><MapPin size={15} /> {[user?.city, user?.state].filter(Boolean).join(', ') || 'Location not added'}</p>
                   </div>
                 </div>
+
+                <Modal open={photoViewerOpen} onClose={() => setPhotoViewerOpen(false)} title={`${user?.name || 'Worker'}'s Profile Photo`}>
+                  {user?.photo && (
+                    <div className="flex items-center justify-center p-2">
+                      <img src={user.photo} alt={user.name} className="max-h-[75vh] w-full rounded-2xl object-contain shadow-lg" />
+                    </div>
+                  )}
+                </Modal>
                 <div className="mt-5 grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Daily rate</p>

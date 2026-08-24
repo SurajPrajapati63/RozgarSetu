@@ -108,6 +108,9 @@ export const updateBookingStatus = asyncHandler(async (req, res) => {
   if (status === 'rejected') {
     booking.cancelReason = cancelReason || 'Rejected by worker';
     booking.cancelledBy = 'worker';
+  } else {
+    booking.cancelReason = undefined;
+    booking.cancelledBy = undefined;
   }
 
   await booking.save();
@@ -131,8 +134,8 @@ export const cancelBooking = asyncHandler(async (req, res) => {
     return ApiResponse.error(res, 'Unauthorized to cancel this booking', 403);
   }
 
-  if (!['pending', 'accepted'].includes(booking.status)) {
-    return ApiResponse.error(res, `Cannot cancel a booking with status '${booking.status}'`, 400);
+  if (booking.status !== 'pending') {
+    return ApiResponse.error(res, 'Bookings can only be cancelled while pending. Once accepted by the worker, bookings cannot be cancelled.', 400);
   }
 
   booking.status = 'cancelled';

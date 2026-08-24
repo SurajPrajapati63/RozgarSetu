@@ -68,7 +68,7 @@ export const getAllWorkers = asyncHandler(async (req, res) => {
     most_reviewed: { reviewCount: -1 }
   };
   const sortObj = sortMap[sort] || { createdAt: -1 };
-  const select = '-password -refreshToken';
+  const select = '-password -refreshToken -mobile -email';
   
   const { data, total } = await paginate(Worker, query, { page: Number(page), limit: Number(limit), sort: sortObj, select });
   return ApiResponse.paginated(res, data, total, Number(page), Number(limit));
@@ -82,26 +82,47 @@ export const getWorkerById = asyncHandler(async (req, res) => {
     return ApiResponse.error(res, 'Workers cannot access other worker profiles', 403);
   }
 
-  const selectFields = auth
-    ? '-password -refreshToken'
-    : 'name photo category city state bio skills pricePerDay experience availability rating reviewCount workerID status createdAt';
-
-  const worker = await Worker.findById(id).select(selectFields);
+  const worker = await Worker.findById(id).select('-password -refreshToken');
   if (!worker) return ApiResponse.error(res, 'Worker not found', 404);
 
   const canView = ['active', 'pending'].includes(worker.status) || req.user?.role === 'admin';
   if (!canView) return ApiResponse.error(res, 'Worker not found', 404);
 
-  // Increment profile views
-  worker.profileViews = (worker.profileViews || 0) + 1;
   if (req.user?.role === 'user') {
     const existingViewer = worker.profileViewers?.find((viewer) => String(viewer.user) === req.user.id);
-    if (existingViewer) existingViewer.viewedAt = new Date();
-    else worker.profileViewers.push({ user: req.user.id });
+    if (existingViewer) {
+      existingViewer.viewedAt = new Date();
+    } else {
+      worker.profileViews = (worker.profileViews || 0) + 1;
+      worker.profileViewers.push({ user: req.user.id });
+    }
+  } else {
+    worker.profileViews = (worker.profileViews || 0) + 1;
   }
   await worker.save();
 
-  return ApiResponse.success(res, worker);
+  let hasAcceptedBooking = false;
+  if (req.user?.role === 'admin') {
+    hasAcceptedBooking = true;
+  } else if (req.user?.role === 'user') {
+    const acceptedBooking = await Booking.findOne({
+      user: req.user.id,
+      worker: id,
+      status: { $in: ['accepted', 'completed'] }
+    });
+    if (acceptedBooking) {
+      hasAcceptedBooking = true;
+    }
+  }
+
+  const workerObj = worker.toObject();
+  workerObj.hasAcceptedBooking = hasAcceptedBooking;
+  if (!hasAcceptedBooking) {
+    workerObj.mobile = null;
+    workerObj.email = null;
+  }
+
+  return ApiResponse.success(res, workerObj);
 });
 
 export const updateProfile = asyncHandler(async (req, res) => {

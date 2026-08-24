@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, LayoutDashboard, Calendar, Shield, ChevronDown, User as UserIcon } from 'lucide-react';
+import { Menu, X, LogOut, LayoutDashboard, Shield, ChevronDown, User as UserIcon } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
 export function Navbar() {
@@ -78,24 +78,6 @@ export function Navbar() {
             </>
           ) : (
             <div className="flex items-center gap-3">
-              {role === 'user' && (
-                <Link
-                  to="/dashboard/user"
-                  className="flex items-center gap-2 rounded-lg bg-blue-50 px-3.5 py-2 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-100"
-                >
-                  <Calendar size={16} /> My Bookings
-                </Link>
-              )}
-
-              {role === 'worker' && (
-                <Link
-                  to="/dashboard/worker"
-                  className="flex items-center gap-2 rounded-lg bg-blue-50 px-3.5 py-2 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-100"
-                >
-                  <LayoutDashboard size={16} /> My Dashboard
-                </Link>
-              )}
-
               {role === 'admin' && (
                 <Link
                   to="/admin"

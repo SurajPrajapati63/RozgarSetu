@@ -21,12 +21,18 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
     if (error.response?.status === 401) {
-      useAuthStore.getState().clearAuth()
-      window.location.href = '/auth'
+      const isAuthRequest = originalRequest?.url?.includes('/auth/')
+      if (!isAuthRequest) {
+        useAuthStore.getState().clearAuth()
+        window.location.href = '/auth'
+      }
       return Promise.reject(error)
     }
     if (error.response?.status === 403) {
-      window.location.href = '/unauthorized'
+      const isAuthRequest = originalRequest?.url?.includes('/auth/')
+      if (!isAuthRequest) {
+        window.location.href = '/unauthorized'
+      }
       return Promise.reject(error)
     }
     if (error.response?.status >= 500) {

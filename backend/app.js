@@ -13,7 +13,9 @@ import routes from './routes/index.js';
 dotenv.config();
 const app = express();
 
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+}));
 app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
 app.use(mongoSanitize());
 app.use(hpp());
@@ -23,8 +25,6 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(morgan('dev'));
 app.use('/uploads', express.static('uploads'));
-
-app.use('/api', generalLimiter);
 
 app.use('/api', routes);
 

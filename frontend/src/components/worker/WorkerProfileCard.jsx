@@ -7,7 +7,13 @@ export function WorkerProfileCard({ worker, onContact, onBook }) {
   return (
     <div className="card space-y-5">
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-        <img src={worker.photo} alt={worker.name} className="h-28 w-28 rounded-full object-cover" loading="lazy" />
+        <img
+          src={worker.photo || 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&w=400&q=80'}
+          alt={worker.name}
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&w=400&q=80'; }}
+          className="h-28 w-28 rounded-full object-cover border-2 border-slate-100 shadow-sm"
+          loading="lazy"
+        />
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-2xl font-semibold text-slate-900">{worker.name}</h2>

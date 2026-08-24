@@ -21,7 +21,7 @@ export default function WorkerPosts() {
         <PostManagementGrid />
       </div>
       <Modal open={open} onClose={() => setOpen(false)} title="Upload post">
-        <PostUploadForm />
+        <PostUploadForm onSuccess={() => setOpen(false)} />
       </Modal>
     </div>
   )

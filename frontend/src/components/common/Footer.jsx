@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { BriefcaseBusiness, Camera, MessageCircle, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useAuthStore } from '../../store/authStore'
 
 export function Footer() {
   const [activeModal, setActiveModal] = useState(null)
+  const role = useAuthStore((state) => state.role)
 
   const content = {
     about: {
@@ -44,7 +46,9 @@ export function Footer() {
             <a href="https://linkedin.com" className="rounded-full border border-slate-700 p-2 hover:border-primary" aria-label="LinkedIn"><BriefcaseBusiness size={16} /></a>
             <a href="https://x.com" className="rounded-full border border-slate-700 p-2 hover:border-primary" aria-label="X"><MessageCircle size={16} /></a>
           </div>
-          <Link to="/auth" className="btn-primary mt-6 inline-flex">Join as Worker</Link>
+          {role !== 'worker' && (
+            <Link to="/auth" className="btn-primary mt-6 inline-flex">Join as Worker</Link>
+          )}
         </div>
       </div>
       <div className="mx-auto mt-10 max-w-7xl border-t border-slate-800 px-4 pt-6 text-center text-sm sm:px-6 lg:px-8">(c) 2026 WorkerLink. All rights reserved.</div>

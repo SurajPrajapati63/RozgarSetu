@@ -27,7 +27,11 @@ export async function getBookingById(id) {
 }
 
 export async function updateBookingStatus(id, status, cancelReason = '') {
-  const response = await axiosInstance.patch(`/bookings/${id}/status`, { status, cancelReason });
+  const payload = { status };
+  if (cancelReason) {
+    payload.cancelReason = cancelReason;
+  }
+  const response = await axiosInstance.patch(`/bookings/${id}/status`, payload);
   return response.data;
 }
 

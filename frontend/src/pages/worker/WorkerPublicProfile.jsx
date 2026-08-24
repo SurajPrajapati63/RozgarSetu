@@ -22,6 +22,8 @@ export default function WorkerPublicProfile() {
 
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
+  const [photoViewerOpen, setPhotoViewerOpen] = useState(false);
+  const [photoError, setPhotoError] = useState(false);
 
   // Form states for booking
   const [serviceDate, setServiceDate] = useState('');
@@ -136,13 +138,35 @@ export default function WorkerPublicProfile() {
           {/* Left Column: Worker Header Card & Quick Info */}
           <div className="space-y-6 lg:col-span-1">
             <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm text-center">
-              <div className="relative mx-auto mb-4 h-28 w-28 overflow-hidden rounded-full border-4 border-slate-50 shadow-inner">
-                <img
-                  src={worker.photo || 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?auto=format&fit=crop&w=400&q=80'}
-                  alt={worker.name}
-                  className="h-full w-full object-cover"
-                />
+              <div className="relative mx-auto mb-4 flex justify-center">
+                {worker.photo && !photoError ? (
+                  <button
+                    type="button"
+                    onClick={() => setPhotoViewerOpen(true)}
+                    className="group relative h-32 w-32 cursor-zoom-in overflow-hidden rounded-full border-4 border-slate-100 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    title="Click to view full photo"
+                  >
+                    <img
+                      src={worker.photo}
+                      alt={worker.name}
+                      onError={() => setPhotoError(true)}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </button>
+                ) : (
+                  <div className="flex h-32 w-32 items-center justify-center rounded-full bg-slate-100 text-3xl font-bold text-slate-500 border-4 border-slate-100 shadow-inner">
+                    {worker.name?.charAt(0)?.toUpperCase() || 'W'}
+                  </div>
+                )}
               </div>
+
+              <Modal open={photoViewerOpen} onClose={() => setPhotoViewerOpen(false)} title={`${worker.name}'s Profile Photo`}>
+                {worker.photo && (
+                  <div className="flex items-center justify-center p-2">
+                    <img src={worker.photo} alt={worker.name} className="max-h-[75vh] w-full rounded-2xl object-contain shadow-lg" />
+                  </div>
+                )}
+              </Modal>
 
               <div className="flex items-center justify-center gap-1.5">
                 <h1 className="text-xl font-bold text-slate-900">{worker.name}</h1>
@@ -334,18 +358,52 @@ export default function WorkerPublicProfile() {
       {/* Contact Details Modal */}
       <Modal open={contactModalOpen} onClose={() => setContactModalOpen(false)} title="Contact Information">
         <div className="space-y-4 text-slate-700">
-          <p className="text-sm text-slate-600">Direct contact info for <strong>{worker.name}</strong>:</p>
-          <div className="rounded-xl bg-slate-50 p-4 space-y-2 border border-slate-200">
-            <div><strong>Mobile:</strong> {worker.mobile || 'Available upon booking'}</div>
-            <div><strong>Email:</strong> {worker.email || 'N/A'}</div>
-            <div><strong>Address:</strong> {worker.address || worker.city}</div>
+          <p className="text-sm text-slate-600">Contact information for <strong>{worker.name}</strong>:</p>
+          <div className="rounded-xl bg-slate-50 p-4 space-y-2.5 border border-slate-200 text-sm">
+            <div><strong>Address / Location:</strong> {worker.address || `${worker.city}, ${worker.state}`}</div>
+            <div>
+              {/* <strong>Mobile:</strong>{' '}
+              {worker.mobile ? (
+                <span className="font-semibold text-slate-900">{worker.mobile}</span>
+              ) : (
+                <span className="text-amber-600 font-medium">Revealed after booking acceptance</span>
+              )}
+            </div>
+            <div>
+              <strong>Email:</strong>{' '}
+              {worker.email ? (
+                <span className="font-semibold text-slate-900">{worker.email}</span>
+              ) : (
+                <span className="text-amber-600 font-medium">Revealed after booking acceptance</span>
+              )} */}
+            </div>
           </div>
-          <button
-            onClick={() => setContactModalOpen(false)}
-            className="w-full rounded-xl bg-blue-600 py-2.5 font-medium text-white"
-          >
-            Close
-          </button>
+
+          {!worker.hasAcceptedBooking && !worker.mobile && (
+            <div className="rounded-xl bg-amber-50 p-3 text-xs text-amber-800 border border-amber-200">
+              🔒 <strong>Privacy Note:</strong> Direct mobile number and email are unlocked once <strong>{worker.name}</strong> accepts your booking request.
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            {!worker.hasAcceptedBooking && !worker.mobile && (
+              <button
+                onClick={() => {
+                  setContactModalOpen(false);
+                  setBookingModalOpen(true);
+                }}
+                className="w-1/2 rounded-xl bg-blue-600 py-2.5 font-semibold text-white shadow-sm hover:bg-blue-700"
+              >
+                Book Worker Now
+              </button>
+            )}
+            <button
+              onClick={() => setContactModalOpen(false)}
+              className={`${!worker.hasAcceptedBooking && !worker.mobile ? 'w-1/2' : 'w-full'} rounded-xl border border-slate-300 py-2.5 font-medium text-slate-700 hover:bg-slate-50`}
+            >
+              Close
+            </button>
+          </div>
         </div>
       </Modal>
 

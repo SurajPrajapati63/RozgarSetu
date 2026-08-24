@@ -1,22 +1,23 @@
 import { useState } from 'react'
+import { uploadSingleImage } from '../api/uploadApi'
 import toast from 'react-hot-toast'
 
 export function useFileUpload() {
-  const [progress, setProgress] = useState(0)
   const [loading, setLoading] = useState(false)
 
   const upload = async (file) => {
     setLoading(true)
-    setProgress(10)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 700))
-      setProgress(100)
+      const response = await uploadSingleImage(file)
       toast.success('Upload complete')
-      return { url: URL.createObjectURL(file) }
+      return response?.data || response
+    } catch (error) {
+      toast.error(error?.response?.data?.message || 'File upload failed')
+      throw error
     } finally {
       setLoading(false)
     }
   }
 
-  return { upload, progress, loading }
+  return { upload, loading }
 }
