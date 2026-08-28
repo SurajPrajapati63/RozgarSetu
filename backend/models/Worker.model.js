@@ -5,7 +5,12 @@ const WorkerSchema = new Schema({
   name: { type: String, required: true, trim: true },
   mobile: { type: String, required: true, unique: true, match: /^[0-9]{10}$/ },
   email: { type: String, default: null, lowercase: true, trim: true },
-  address: { type: String, required: true, trim: true, maxlength: 500 },
+  address: { type: String, trim: true, maxlength: 500 },
+  country: { type: String, required: true, trim: true },
+  state: { type: String, required: true, trim: true, default: 'State' },
+  district: { type: String, required: true, trim: true },
+  city: { type: String, required: true, trim: true, default: 'City' },
+  pincode: { type: String, required: true, trim: true },
   password: { type: String, required: true, select: false },
   workerID: { type: String, unique: true, required: true },
   role: { type: String, default: 'worker', immutable: true },
@@ -19,8 +24,6 @@ const WorkerSchema = new Schema({
     default: 'Others' 
   },
   skills: [{ type: String }],
-  city: { type: String, default: 'City' },
-  state: { type: String, default: 'State' },
   pricePerDay: { type: Number, required: true, min: 100, default: 500 },
   experience: { type: Number, default: 0 },
   availability: {

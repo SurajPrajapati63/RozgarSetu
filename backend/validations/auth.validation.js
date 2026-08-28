@@ -1,13 +1,26 @@
 import Joi from 'joi';
 
-export const userSignupSchema = Joi.object({ name: Joi.string().min(2).max(100).required(), mobile: Joi.string().length(10).pattern(/^[0-9]+$/).required(), address: Joi.string().min(5).max(500).required(), password: Joi.string().min(8).pattern(/^(?=.*[A-Z])(?=.*[0-9])/).required().messages({ 'string.pattern.base': 'Password must have 1 uppercase and 1 number' }) }).unknown(true);
+export const userSignupSchema = Joi.object({
+  name: Joi.string().min(2).max(100).required(),
+  mobile: Joi.string().length(10).pattern(/^[0-9]+$/).required(),
+  country: Joi.string().min(2).max(100).required(),
+  state: Joi.string().min(2).max(100).required(),
+  district: Joi.string().min(2).max(100).required(),
+  city: Joi.string().min(2).max(100).required(),
+  pincode: Joi.string().min(4).max(10).pattern(/^[0-9]+$/).required(),
+  password: Joi.string().min(8).pattern(/^(?=.*[A-Z])(?=.*[0-9])/).required().messages({ 'string.pattern.base': 'Password must have 1 uppercase and 1 number' }),
+}).unknown(true);
 
 export const userLoginSchema = Joi.object({ mobile: Joi.string().length(10).pattern(/^[0-9]+$/).required(), password: Joi.string().required() });
 
 export const workerSignupSchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),
   mobile: Joi.string().length(10).pattern(/^[0-9]+$/).required(),
-  address: Joi.string().min(5).max(500).required(),
+  country: Joi.string().min(2).max(100).required(),
+  state: Joi.string().min(2).max(100).required(),
+  district: Joi.string().min(2).max(100).required(),
+  city: Joi.string().min(2).max(100).required(),
+  pincode: Joi.string().min(4).max(10).pattern(/^[0-9]+$/).required(),
   password: Joi.string().min(8).pattern(/^(?=.*[A-Z])(?=.*[0-9])/).required().messages({ 'string.pattern.base': 'Password must have 1 uppercase and 1 number' }),
 }).unknown(true);
 

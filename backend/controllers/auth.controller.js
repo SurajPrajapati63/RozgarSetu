@@ -22,10 +22,10 @@ const verifyPassword = async (candidatePassword, storedPassword) => {
 };
 
 export const userSignup = async (req, res) => {
-  const { name, mobile, password, address } = req.body;
+  const { name, mobile, password, country, state, district, city, pincode } = req.body;
   if (await User.findOne({ mobile })) return ApiResponse.error(res, 'Mobile already registered', 409);
   const hashed = await bcrypt.hash(password, 12);
-  const user = await User.create({ name, mobile, password: hashed, address });
+  const user = await User.create({ name, mobile, password: hashed, country, state, district, city, pincode });
   const payload = { id: user._id, role: user.role };
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken(payload);
@@ -62,11 +62,12 @@ export const userLogin = async (req, res) => {
 };
 
 export const workerSignup = async (req, res) => {
-  const { name, mobile, address, password } = req.body;
+  const { name, mobile, country, state, district, city, pincode, password } = req.body;
   if (await Worker.findOne({ mobile })) return ApiResponse.error(res, 'Mobile already registered', 409);
   const hashed = await bcrypt.hash(password, 12);
   const workerID = await generateWorkerID();
-  const worker = await Worker.create({ name, mobile, address, password: hashed, workerID });
+  const address = `${city}, ${district}, ${state}, ${country} - ${pincode}`;
+  const worker = await Worker.create({ name, mobile, address, password: hashed, workerID, country, state, district, city, pincode });
   // send welcome email/sms (best-effort)
   return ApiResponse.success(res, { workerID }, 'Registration successful');
 };

@@ -41,7 +41,11 @@ export async function signupWorker(payload) {
     name: payload.name,
     mobile: payload.mobile,
     password: payload.password,
-    address: payload.address,
+    country: payload.country,
+    state: payload.state,
+    district: payload.district,
+    city: payload.city,
+    pincode: payload.pincode,
   })
 
   return unwrap(response)

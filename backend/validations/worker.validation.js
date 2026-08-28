@@ -7,6 +7,9 @@ export const updateWorkerProfileSchema = Joi.object({
   skills: Joi.array().items(Joi.string()),
   city: Joi.string().max(100),
   state: Joi.string().max(100),
+  country: Joi.string().max(100),
+  district: Joi.string().max(100),
+  pincode: Joi.string().max(10).pattern(/^[0-9]+$/),
   address: Joi.string().max(500),
   pricePerDay: Joi.number().min(100),
   experience: Joi.number().min(0)

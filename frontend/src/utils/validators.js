@@ -22,7 +22,11 @@ export const signupSchema = z.object({
   mobile: z.string().regex(/^\d{10}$/, 'Mobile must be 10 digits'),
   password,
   confirmPassword: z.string().min(1, 'Please confirm your password'),
-  address: z.string().min(5, 'Address is required'),
+  country: z.string().min(2, 'Country is required'),
+  state: z.string().min(2, 'State is required'),
+  district: z.string().min(2, 'District is required'),
+  city: z.string().min(2, 'City is required'),
+  pincode: z.string().min(4, 'Pincode is required').max(10).regex(/^\d+$/, 'Pincode must be numeric'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'],
